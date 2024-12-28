@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Set character encoding to UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Ensures the page is responsive on different devices -->
+    <title>Expense Tracker with Savings Trend</title> 
+    <!-- Page title displayed on the browser tab -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <!-- Include Chart.js library for graph generation -->
+    <style>
+        /* Basic styling for the body and page layout */
+        body {
+            font-family: 'Arial', sans-serif;
+            /* Set font */
+            margin: 0; 
+            /* Remove default margin */
+            padding: 0;
+            /* Remove default padding */
+            background: linear-gradient(to bottom, #b3cde0, #d3c6e7, #a3d5d3); 
+            /* Set background gradient */
+        }
+
+        /* Header styling */
+        header {
+            text-align: center;
+            /* Center-align text */
+            padding: 20px; 
+            /* Add padding */
+            background: linear-gradient(to right, #afc7f2, #d0a1f4); 
+            /* Set gradient background */
+            color: white;
+            /* Set text color to white */
+            font-size: 2em;
+            /* Increase font size */
+            font-weight: bold; 
+            /* Make the text bold */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            /* Add a subtle shadow */
+        }
+
+        /* Container for the main content */
+        .container {
+            max-width: 900px;
+            /* Set maximum width */
+            margin: 20px auto;
+            /* Center-align container with top margin */
+            padding: 20px;
+            /* Add padding inside the container */
+            background: rgba(255, 255, 255, 0.9); 
+            /* Semi-transparent white background */
+            border-radius: 15px;
+            /* Rounded corners */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            /* Box shadow effect */
+        }
+
+        /* Styling for h2 elements */
+        h2 {
+            text-align: center; 
+            
+            /* Center-align the header text */
+            margin-bottom: 20px;
+            /* Add bottom margin */
+            color: #6f42c1;
+            /* Set text color */
+        }
+
+        /* Styling for the table */
+        table {
+            width: 100%;
+            /* Make the table full-width */
+            border-collapse: collapse;
+            /* Collapse table borders */
+            margin-bottom: 20px;
+            /* Add bottom margin */
+        }
+
+        /* Table header styling */
+        table th, table td {
+            padding: 10px;
+            /* Add padding to cells */
+            text-align: left;
+            /* Align text to the left */
+            border: 1px solid #ddd; 
+            /* Add a border to cells */
+        }
+
+        /* Table header specific styling */
+        table th {
+            background: linear-gradient(to right, #e5eaf5, #d3d9ec); 
+            /* Gradient background */
+            color: #555;
+            /* Set text color */
+        }
+
+        /* Styling for input fields and select elements */
+        input, select {
+            width: calc(50% - 10px);
+            /* Set width to 50% minus some space */
+            padding: 10px; 
+            /* Add padding */
+            margin: 5px 5px 20px; 
+            /* Set margin around inputs */
+            border: 1px solid #ccc; 
+            /* Set border */
+            border-radius: 4px; 
+            /* Round corners */
+            background: rgba(240, 240, 255, 0.8); 
+            /* Semi-transparent background */
+            color: #333; 
+            /* Text color */
+        }
+
+        /* Button styling */
+        .add-btn {
+            display: block;
+            /* Make button block-level */
+            width: 100%; 
+            /* Set button to full width */
+            padding: 10px;
+            /* Add padding */
+            background: linear-gradient(to right, #6a5acd, #7a67ee);
+            /* Gradient background */
+            color: white;
+            /* White text */
+            border: none;
+            /* Remove border */
+            border-radius: 5px; 
+            /* Rounded corners */
+            cursor: pointer; 
+            /* Change cursor on hover */
+            margin-top: 10px; 
+            /* Add top margin */
+            font-size: 1.1em;
+            /* Increase font size */
+            font-weight: bold;
+            /* Make text bold */
+            transition: background 0.3s ease;
+            /* Smooth background color transition */
+        }
+
+        /* Hover effect for buttons */
+        .add-btn:hover {
+            background: #5a4fcf;
+            /* Change background on hover */
+        }
+
+        /* Chart container styling */
+        .charts {
+            margin-top: 40px;
+            /* Add top margin */
+        }
+
+        /* Styling for canvas elements */
+        canvas {
+            margin: 20px auto;
+            /* Center-align canvas with margin */
+            display: block; 
+            /* Ensure canvas is block-level */
+            background: rgba(245, 245, 255, 0.9); 
+            /* Light background */
+            border-radius: 10px; 
+            /* Rounded corners */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            /* Shadow effect */
+        }
+
+        /* Styling for options container (dropdowns) */
+        .options-container {
+            display: flex;
+            /* Use flexbox for alignment */
+            justify-content: center; /* Center-align the options */
+            gap: 20px; /* Space out options */
+            margin-bottom: 20px; /* Add bottom margin */
+            flex-wrap: wrap; /* Wrap items if needed */
+        }
+
+        /* Delete button styling */
+        .delete-btn {
+            background: none; /* No background */
+            color: #6a5acd; /* Set color */
+            border: none; /* No border */
+            cursor: pointer; /* Change cursor on hover */
+            font-weight: bold; /* Make text bold */
+        }
+
+        /* Hover effect for delete buttons */
+        .delete-btn:hover {
+            color: #483d8b; /* Change color on hover */
+        }
+
+        /* Summary container styling */
+        .summary-container {
+            margin-top: 30px; /* Add top margin */
+            padding: 20px; /* Add padding */
+            background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Box shadow effect */
+        }
+
+        /* Styling for summary header */
+        .summary-container h3 {
+            text-align: center; /* Center-align header */
+            color: #4c3f91; /* Set color */
+        }
+
+        /* Styling for individual summary items */
+        .summary-item {
+            margin-bottom: 10px; /* Add bottom margin */
+            font-size: 1.2em; /* Set font size */
+        }
+
+        /* Styling for values in the summary */
+        .summary-item span {
+            font-weight: bold; /* Make text bold */
+            color: #6f42c1; /* Set color */
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        Monthly Budget Tracker <!-- Display title in header -->
+    </header>
+    <div class="container">
+        <!-- Income Section -->
+        <h2>Income</h2>
+        <table id="income-table">
+            <thead>
+                <tr>
+                    <th>Income Item</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <input type="text" id="income-item" placeholder="Income Item"> <!-- Income item input field -->
+        <input type="number" id="income-amount" placeholder="Amount"> <!-- Income amount input field -->
+        <button class="add-btn" onclick="addIncome()">Add Income</button> <!-- Button to add income -->
+
+        <!-- Expenses Section -->
+        <h2>Expenses</h2>
+        <table id="expense-table">
+            <thead>
+                <tr>
+                    <th>Expense Item</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <input type="text" id="expense-item" placeholder="Expense Item"> <!-- Expense item input field -->
+        <input type="number" id="expense-amount" placeholder="Amount"> <!-- Expense amount input field -->
+        <button class="add-btn" onclick="addExpense()">Add Expense</button> <!-- Button to add expense -->
+
+        <!-- Charts Section -->
+        <div class="charts">
+            <h2>Graphical Analysis</h2>
+            <div class="options-container">
+                <label for="graph-type">Select Graph Type: </label>
+                <select id="graph-type" onchange="updateCharts()"> <!-- Dropdown for selecting graph type -->
+                    <option value="pie">Pie Chart</option> <!-- Option for pie chart -->
+                    <option value="bar">Bar Chart</option> <!-- Option for bar chart -->
+                    <option value="line">Line Chart</option> <!-- Option for line chart -->
+                </select>
+                <label for="data-type">Select Data Type: </label>
+                <select id="data-type" onchange="updateCharts()"> <!-- Dropdown for selecting data type -->
+                    <option value="income">Income Distribution</option> <!-- Option for income data -->
+                    <option value="expenses">Expenses Distribution</option> <!-- Option for expenses data -->
+                </select>
+            </div>
+            <canvas id="chartCanvas" width="400" height="400"></canvas> <!-- Chart.js canvas for displaying the graph -->
+
+            <!-- Savings Trend Section -->
+            <h2>Savings Trend</h2>
+            <canvas id="savingsCanvas" width="400" height="400"></canvas> <!-- Chart.js canvas for savings trend -->
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-container">
+            <h3>Summary</h3>
+            <div class="summary-item">
+                <span>Total Income: </span><span id="total-income">0.00</span> <!-- Total income summary item -->
+            </div>
+            <div class="summary-item">
+                <span>Total Expenses: </span><span id="total-expenses">0.00</span> <!-- Total expenses summary item -->
+            </div>
+            <div class="summary-item">
+                <span>Net Savings: </span><span id="net-savings">0.00</span> <!-- Net savings summary item -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize empty arrays for incomes and expenses
+        let incomes = [];
+        let expenses = [];
+        let chart, savingsChart;
+
+        // Function to add income entries
+        function addIncome() {
+            const item = document.getElementById('income-item').value; // Get the income item name
+            const amount = parseFloat(document.getElementById('income-amount').value); // Get the income amount
+
+            // Validate the input and ensure it's a valid number
+            if (item && amount && validateAmount(amount)) {
+                incomes.push({ item, amount, date: new Date() }); // Add income entry to incomes array
+                updateTable('income-table', incomes, true); // Update the income table
+                updateCharts(); // Update the charts
+                updateSavingsChart(); // Update the savings chart
+                updateSummary(); // Update the summary section
+                resetForm('income'); // Reset the income form fields
+            } else {
+                alert("Please provide valid income item and amount."); // Show alert if inputs are invalid
+            }
+        }
+
+        // Function to add expense entries
+        function addExpense() {
+            const item = document.getElementById('expense-item').value; // Get the expense item name
+            const amount = parseFloat(document.getElementById('expense-amount').value); // Get the expense amount
+
+            // Validate the input and ensure it's a valid number
+            if (item && amount && validateAmount(amount)) {
+                expenses.push({ item, amount, date: new Date() }); // Add expense entry to expenses array
+                updateTable('expense-table', expenses, false); // Update the expense table
+                updateCharts(); // Update the charts
+                updateSavingsChart(); // Update the savings chart
+                updateSummary(); // Update the summary section
+                resetForm('expense'); // Reset the expense form fields
+            } else {
+                alert("Please provide valid expense item and amount."); // Show alert if inputs are invalid
+            }
+        }
+
+        // Helper function to validate amounts (cannot be negative)
+        function validateAmount(amount) {
+            return amount > 0; // Ensure the amount is greater than 0
+        }
+
+        // Function to reset the form after adding an entry
+        function resetForm(type) {
+            if (type === 'income') {
+                document.getElementById('income-item').value = ''; // Reset income item input field
+                document.getElementById('income-amount').value = ''; // Reset income amount input field
+            } else {
+                document.getElementById('expense-item').value = ''; // Reset expense item input field
+                document.getElementById('expense-amount').value = ''; // Reset expense amount input field
+            }
+        }
+
+        // Function to update the table with new data (either income or expenses)
+        function updateTable(tableId, data, isIncome) {
+            const tableBody = document.querySelector(`#${tableId} tbody`); // Get the table body
+            tableBody.innerHTML = ''; // Clear the existing table data
+            data.forEach((entry, index) => { // Loop through the data and add rows
+                const row = `<tr>
+                                <td>${entry.item}</td>
+                                <td>${entry.amount.toFixed(2)}</td>
+                                <td><button class="delete-btn" onclick="deleteEntry(${index}, ${isIncome})">Delete</button></td>
+                             </tr>`;
+                tableBody.innerHTML += row; // Add the row to the table body
+            });
+        }
+
+        // Function to delete a specific entry from either income or expenses
+        function deleteEntry(index, isIncome) {
+            if (isIncome) {
+                incomes.splice(index, 1); // Remove income entry
+            } else {
+                expenses.splice(index, 1); // Remove expense entry
+            }
+            updateTable(isIncome ? 'income-table' : 'expense-table', isIncome ? incomes : expenses, isIncome); // Update the table
+            updateCharts(); // Update the charts
+            updateSavingsChart(); // Update the savings chart
+            updateSummary(); // Update the summary section
+        }
+
+        // Function to update charts based on selected graph type and data type
+        function updateCharts() {
+            const graphType = document.getElementById('graph-type').value; // Get the selected graph type
+            const dataType = document.getElementById('data-type').value; // Get the selected data type
+
+            let labels, data, label;
+
+            // Determine the labels and data based on selected type
+            if (dataType === 'income') {
+                labels = incomes.map(i => i.item); // Get income items as labels
+                data = incomes.map(i => i.amount); // Get income amounts as data
+                label = 'Income Distribution'; // Label for the graph
+            } else {
+                labels = expenses.map(e => e.item); // Get expense items as labels
+                data = expenses.map(e => e.amount); // Get expense amounts as data
+                label = 'Expenses Distribution'; // Label for the graph
+            }
+
+            const ctx = document.getElementById('chartCanvas').getContext('2d'); // Get the canvas context
+            if (chart) chart.destroy(); // Destroy the previous chart if it exists
+
+            chart = new Chart(ctx, { // Create a new chart
+                type: graphType, // Set chart type (pie, bar, or line)
+                data: {
+                    labels: labels, // Set labels for the chart
+                    datasets: [{
+                        label: label, // Set the dataset label
+                        data: data, // Set the data for the chart
+                        backgroundColor: ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1'], // Set colors for each section
+                        borderColor: '#f4f4f4', // Set border color
+                        borderWidth: 1 // Set border width
+                    }]
+                },
+                options: {
+                    responsive: true, // Make the chart responsive
+                },
+            });
+        }
+
+        // Function to update the savings chart
+function updateCharts() {
+            const graphType = document.getElementById('graph-type').value; // Get the selected graph type
+            const dataType = document.getElementById('data-type').value; // Get the selected data type
+
+            let labels, data, label;
+
+            // Determine the labels and data based on selected type
+            if (dataType === 'income') {
+                labels = incomes.map(i => i.item); // Get income items as labels
+                data = incomes.map(i => i.amount); // Get income amounts as data
+                label = 'Income Distribution'; // Label for the graph
+            } else {
+                labels = expenses.map(e => e.item); // Get expense items as labels
+                data = expenses.map(e => e.amount); // Get expense amounts as data
+                label = 'Expenses Distribution'; // Label for the graph
+            }
+
+            const ctx = document.getElementById('chartCanvas').getContext('2d'); // Get the canvas context
+            if (chart) chart.destroy(); // Destroy the previous chart if it exists
+
+            chart = new Chart(ctx, { // Create a new chart
+                type: graphType, // Set chart type (pie, bar, or line)
+                data: {
+                    labels: labels, // Set labels for the chart
+                    datasets: [{
+                        label: label, // Set the dataset label
+                        data: data, // Set the data for the chart
+                        backgroundColor: ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1'], // Set colors for each section
+                        borderColor: '#f4f4f4', // Set border color
+                        borderWidth: 1 // Set border width
+                    }]
+                },
+                options: {
+                    responsive: true, // Make the chart responsive
+                },
+            });
+        }
+
+        // Function to update the savings chart
+        function updateSavingsChart() {
+            const labels = incomes.map((_, index) => `Month ${index + 1}`); // Labels for the savings chart (Month 1, Month 2, etc.)
+            const incomeTotal = incomes.map((_, i) => incomes.slice(0, i + 1).reduce((sum, income) => sum + income.amount, 0)); // Cumulative income
+            const expenseTotal = expenses.map((_, i) => expenses.slice(0, i + 1).reduce((sum, expense) => sum + expense.amount, 0)); // Cumulative expenses
+
+            const savings = incomeTotal.map((total, i) => total - (expenseTotal[i] || 0)); // Calculate savings over time
+
+            const ctx = document.getElementById('savingsCanvas').getContext('2d'); // Get the savings chart context
+            if (savingsChart) savingsChart.destroy(); // Destroy the previous savings chart if it exists
+
+            savingsChart = new Chart(ctx, { // Create a new savings chart
+                type: 'line', // Set chart type to line
+                data: {
+                    labels: labels, // Set labels for the chart (Months)
+                    datasets: [{
+                        label: 'Savings Trend', // Label for the dataset
+                        data: savings, // Set savings data
+                        borderColor: '#6f42c1', // Set border color
+                        backgroundColor: 'rgba(111, 66, 193, 0.2)', // Set background color
+                        borderWidth: 2, // Set border width
+                        fill: true // Fill the area under the line
+                    }]
+                },
+                options: {
+                    responsive: true, // Make the chart responsive
+                    scales: {
+                        y: {
+                            beginAtZero: true, // Start the Y axis at zero
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to update the summary section
+        function updateSummary() {
+            const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0); // Calculate total income
+            const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0); // Calculate total expenses
+            const netSavings = totalIncome - totalExpenses; // Calculate net savings
+
+            document.getElementById('total-income').textContent = totalIncome.toFixed(2); // Update total income in summary
+            document.getElementById('total-expenses').textContent = totalExpenses.toFixed(2); // Update total expenses in summary
+            document.getElementById('net-savings').textContent = netSavings.toFixed(2); // Update net savings in summary
+        }
+
+        // Initialize the charts when the page loads
+        updateCharts();
+        updateSavingsChart();
+        updateSummary();
+    </script>
+</body>
+</html>
